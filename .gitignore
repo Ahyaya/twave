@@ -1,0 +1,7 @@
+*.out
+*.so
+*.a
+*.DS_Store
+*.eps
+*.svg
+*.pdf
