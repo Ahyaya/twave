@@ -1,3 +1,9 @@
+/*
+*   version mainz
+*   contact author: c.houyuan@mail.scut.edu.cn
+*/
+
+
 #include <stdio.h>
 #include <math.h>
 #include <complex.h> 
@@ -24,10 +30,10 @@ int solve_twave (twaveSolution_t out[],
     double tdepth[length];
     double sqrtPiFreq=sqrt(pi*freq);
 
-    double _Complex An = CMPLX(1,0);
-    double _Complex Bn = CMPLX(0,0);
+    double _Complex An = 1.0 + 0.0*I;
+    double _Complex Bn = 0.0 + 0.0*I;
     double _Complex nextAn, nextBn, mu_ambient, qn; 
-    double Rn, epsR, L0, L1, T0, T1;
+    double Rn, epsR0, epsR1, L0, L1, T0, T1;
 
     if (length > 64 || length <= 0){
         return -1;
@@ -48,10 +54,10 @@ int solve_twave (twaveSolution_t out[],
         mu_ambient = boundaryProp[length-1].ambientEffus;
         break;
     case 1:
-        mu_ambient = boundaryProp[length-1].convectTransCoef/sqrt(2*pi*freq)*cexp(-0.25*pi*I);
+        mu_ambient = boundaryProp[length-1].convectTransCoef/sqrt(2*pi*freq)*cexp(0.25*pi*I);
         break;
     case 2:
-        mu_ambient = 4*(5.67e-8)*(boundaryProp[length-1].radiTransCoef)*pow(boundaryProp[length-1].temperatures[0],3)/sqrt(2*pi*freq)*cexp(-0.25*pi*I);
+        mu_ambient = 4*(5.67e-8)*(boundaryProp[length-1].radiDissipateCoef)*pow(boundaryProp[length-1].temperatures[0],3)/sqrt(2*pi*freq)*cexp(0.25*pi*I);
         break;
     default:
         return -3;
@@ -63,8 +69,8 @@ int solve_twave (twaveSolution_t out[],
         out[ptr].mu=mu[ptr];
         out[ptr].TD=tdepth[ptr];
     }
-    nextAn = 0.5*cexp((1.0+1.0*I)*sqrtPiFreq*tdepth[length-1])*((1.0 + mu_ambient/mu[length-1])*An+(1.0 - mu_ambient/mu[length-1])*Bn);
-    nextBn = 0.5*cexp(-(1.0+1.0*I)*sqrtPiFreq*tdepth[length-1])*((1-mu_ambient/mu[length-1])*An+(1+mu_ambient/mu[length-1])*Bn);
+    nextAn = 0.5*cexp((1.0-1.0*I)*sqrtPiFreq*tdepth[length-1])*((1.0 + mu_ambient/mu[length-1])*An+(1.0 - mu_ambient/mu[length-1])*Bn);
+    nextBn = 0.5*cexp(-(1.0-1.0*I)*sqrtPiFreq*tdepth[length-1])*((1-mu_ambient/mu[length-1])*An+(1+mu_ambient/mu[length-1])*Bn);
 
     An=nextAn; Bn=nextBn;
     out[length-1].An=nextAn;
@@ -74,23 +80,25 @@ int solve_twave (twaveSolution_t out[],
         switch (boundaryType[ptr])
         {
         case 0:
-            nextAn = 0.5*cexp((1.0+1.0*I)*sqrtPiFreq*tdepth[ptr])*((1+mu[ptr+1]/mu[ptr])*An+(1-mu[ptr+1]/mu[ptr])*Bn);
-            nextBn = 0.5*cexp(-(1.0+1.0*I)*sqrtPiFreq*tdepth[ptr])*((1-mu[ptr+1]/mu[ptr])*An+(1+mu[ptr+1]/mu[ptr])*Bn);
+            nextAn = 0.5*cexp((1.0-1.0*I)*sqrtPiFreq*tdepth[ptr])*((1+mu[ptr+1]/mu[ptr])*An+(1-mu[ptr+1]/mu[ptr])*Bn);
+            nextBn = 0.5*cexp(-(1.0-1.0*I)*sqrtPiFreq*tdepth[ptr])*((1-mu[ptr+1]/mu[ptr])*An+(1+mu[ptr+1]/mu[ptr])*Bn);
             break;
         case 1:
             Rn = boundaryProp[ptr].contactResist;
-            qn = mu[ptr+1]*cexp(0.25*I*pi)*sqrt(2*pi*freq)*(An-Bn);
-            nextAn = 0.5*cexp((1.0+1.0*I)*sqrtPiFreq*tdepth[ptr])*(Rn*qn+(1+mu[ptr+1]/mu[ptr])*An+(1-mu[ptr+1]/mu[ptr])*Bn);
-            nextBn = 0.5*cexp(-(1.0+1.0*I)*sqrtPiFreq*tdepth[ptr])*(Rn*qn+(1-mu[ptr+1]/mu[ptr])*An+(1+mu[ptr+1]/mu[ptr])*Bn);
+            qn = mu[ptr+1]*cexp(-0.25*I*pi)*sqrt(2*pi*freq)*(An-Bn);
+            nextAn = 0.5*cexp((1.0-1.0*I)*sqrtPiFreq*tdepth[ptr])*(Rn*qn+(1+mu[ptr+1]/mu[ptr])*An+(1-mu[ptr+1]/mu[ptr])*Bn);
+            nextBn = 0.5*cexp(-(1.0-1.0*I)*sqrtPiFreq*tdepth[ptr])*(Rn*qn+(1-mu[ptr+1]/mu[ptr])*An+(1+mu[ptr+1]/mu[ptr])*Bn);
             break;
         case 2:
             L0=boundaryProp[ptr].leakageCoefs[0];
             L1=boundaryProp[ptr].leakageCoefs[1];
-            epsR=boundaryProp[ptr].radiTransCoef;
+            epsR0=boundaryProp[ptr].radiTransCoefs[0];
+            epsR1=boundaryProp[ptr].radiTransCoefs[1];
             T0=boundaryProp[ptr].temperatures[0];
             T1=boundaryProp[ptr].temperatures[1];
-            nextAn = 0.5*cexp((1.0+1.0*I)*sqrtPiFreq*tdepth[ptr])*((cexp(0.25*I*pi)*mu[ptr+1]*sqrt(2*pi*freq)/(4*(5.67e-8)*epsR*pow(T0,3))+(1+L0/epsR)*mu[ptr+1]/mu[ptr])*(An-Bn)+((1+4*(5.67e-8)*L0*pow(T0,3)/(mu[ptr]*sqrt(2*pi*freq))*cexp(-0.25*I*pi))*(1+L1/epsR)*pow(T1/T0,3)+4*(5.67e-8)*L1*pow(T1,3)*cexp(-0.25*I*pi)/(mu[ptr]*sqrt(2*pi*freq)))*(An+Bn));
-            nextBn = 0.5*cexp(-(1.0+1.0*I)*sqrtPiFreq*tdepth[ptr])*((cexp(0.25*I*pi)*mu[ptr+1]*sqrt(2*pi*freq)/(4*(5.67e-8)*epsR*pow(T0,3))-(1+L0/epsR)*mu[ptr+1]/mu[ptr])*(An-Bn)+((1-4*(5.67e-8)*L0*pow(T0,3)/(mu[ptr]*sqrt(2*pi*freq))*cexp(-0.25*I*pi))*(1+L1/epsR)*pow(T1/T0,3)-4*(5.67e-8)*L1*pow(T1,3)*cexp(-0.25*I*pi)/(mu[ptr]*sqrt(2*pi*freq)))*(An+Bn));
+
+            nextAn = 0.5*cexp((1.0-1.0*I)*sqrtPiFreq*tdepth[ptr])*(((mu[ptr+1]*sqrt(2*pi*freq)*(1.0-1.0*I)/sqrt(2))/(4*(5.67e-8)*epsR1*pow(T0,3)) + (epsR0+L0)*mu[ptr+1]/(epsR1*mu[ptr])) * (An-Bn) + ((1+L1/epsR1)*pow(T1/T0,3) + 4*(5.67e-8)*(L0+L1*epsR0/epsR1+L0*L1/epsR1)*pow(T1,3)/(mu[ptr]*sqrt(2*pi*freq)*(1.0-1.0*I)/sqrt(2))) * (An+Bn));
+            nextBn = 0.5*cexp(-(1.0-1.0*I)*sqrtPiFreq*tdepth[ptr])*(((mu[ptr+1]*sqrt(2*pi*freq)*(1.0-1.0*I)/sqrt(2))/(4*(5.67e-8)*epsR1*pow(T0,3)) - (epsR0+L0)*mu[ptr+1]/(epsR1*mu[ptr])) * (An-Bn) + ((1+L1/epsR1)*pow(T1/T0,3) - 4*(5.67e-8)*(L0+L1*epsR0/epsR1+L0*L1/epsR1)*pow(T1,3)/(mu[ptr]*sqrt(2*pi*freq)*(1.0-1.0*I)/sqrt(2))) * (An+Bn));
             break;
         default:
             return -3;
@@ -124,8 +132,8 @@ double _Complex get_transfunc(twaveSolution_t result[],
     double _Complex Ain, Bin, Aout, Bout, wavein, waveout;
     double freq=result[0].freq;
     if(type&0B0100){
-        Ain=(result[inlayer].An)*cexp(-(1+I)*sqrt(pi*freq)*(result[inlayer].TD));
-        Bin=(result[inlayer].Bn)*cexp((1+I)*sqrt(pi*freq)*(result[inlayer].TD));
+        Ain=(result[inlayer].An)*cexp(-(1.0-1.0*I)*sqrt(pi*freq)*(result[inlayer].TD));
+        Bin=(result[inlayer].Bn)*cexp((1.0-1.0*I)*sqrt(pi*freq)*(result[inlayer].TD));
     }else{
         Ain=result[inlayer].An;
         Bin=result[inlayer].Bn;
@@ -134,16 +142,16 @@ double _Complex get_transfunc(twaveSolution_t result[],
         Aout=result[outlayer].An;
         Bout=result[outlayer].Bn;
     }else{
-        Aout=(result[outlayer].An)*cexp(-(1+I)*sqrt(pi*freq)*(result[outlayer].TD));
-        Bout=(result[outlayer].Bn)*cexp((1+I)*sqrt(pi*freq)*(result[outlayer].TD));
+        Aout=(result[outlayer].An)*cexp(-(1.0-1.0*I)*sqrt(pi*freq)*(result[outlayer].TD));
+        Bout=(result[outlayer].Bn)*cexp((1.0-1.0*I)*sqrt(pi*freq)*(result[outlayer].TD));
     }
     if(type&0B0001){
-        wavein=(result[inlayer].mu)*sqrt(2*pi*freq)*cexp(0.25*pi*I)*(Ain-Bin);
+        wavein=(result[inlayer].mu)*sqrt(2*pi*freq)*cexp(-0.25*pi*I)*(Ain-Bin);
     }else{
         wavein=Ain+Bin;
     }
     if(type&0B0010){
-        waveout=(result[outlayer].mu)*sqrt(2*pi*freq)*cexp(0.25*pi*I)*(Aout-Bout);
+        waveout=(result[outlayer].mu)*sqrt(2*pi*freq)*cexp(-0.25*pi*I)*(Aout-Bout);
     }else{
         waveout=Aout+Bout;
     }

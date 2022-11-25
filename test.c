@@ -22,7 +22,8 @@ int main(){
     lprop[1].thickness=0.020;
 
     btype[1]=2;
-    bprop[1].radiTransCoef=0.026;
+    bprop[1].radiTransCoefs[0]=0.026;
+    bprop[1].radiTransCoefs[1]=0.026;
     bprop[1].leakageCoefs[0]=9.57e-3;
     bprop[1].leakageCoefs[1]=9.57e-3;
     bprop[1].temperatures[0]=321.90;
@@ -34,7 +35,7 @@ int main(){
     lprop[2].thickness=0.020;
 
     btype[2]=2;
-    bprop[2].radiTransCoef=0.05;
+    bprop[2].radiDissipateCoef=0.05;
     bprop[2].temperatures[0]=293.15;
 
     double freq = 1e-4;
@@ -50,7 +51,7 @@ int main(){
     /*
     int ptr;
     for(ptr=0;ptr<3;++ptr){
-        fprintf(stderr,"%lf + %lfi   %lf + %lfi\n",
+        fprintf(stderr,"%lf %+lfj,   %lf   %+lfj\n",
         creal(sol[ptr].An),
         cimag(sol[ptr].An),
         creal(sol[ptr].Bn),

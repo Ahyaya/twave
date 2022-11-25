@@ -61,7 +61,8 @@ def thermo_dyn(freq, Is, rcScale=[1.0,1.0]):
     lprop[1].thickness=0.020
     
     btype[1]=2
-    bprop[1].radiTransCoef=0.025633
+    bprop[1].radiTransCoefs[0]=0.025633
+    bprop[1].radiTransCoefs[1]=0.025633
     bprop[1].leakageCoefs[0]=0.0095692
     bprop[1].leakageCoefs[1]=0.0095692
     bprop[1].temperatures[0]=Tb
@@ -73,7 +74,7 @@ def thermo_dyn(freq, Is, rcScale=[1.0,1.0]):
     lprop[2].thickness=0.020
     
     btype[2]=2
-    bprop[2].radiTransCoef=0.05
+    bprop[2].radiDissipateCoef=0.05
     bprop[2].temperatures[0]=293.15
 
     twave.solve_twave_glvar(freq, lprop, btype, bprop,3)
@@ -153,7 +154,7 @@ def sunshield_dyn(freq, Is, rcScale=[1.0,1.0]):
     lprop[1].thickness=0.020
     
     btype[1]=2
-    bprop[1].radiTransCoef=0.05
+    bprop[1].radiDissipateCoef=0.05
     bprop[1].temperatures[0]=Tb
 
     twave.solve_twave_glvar(freq, lprop, btype, bprop,2)

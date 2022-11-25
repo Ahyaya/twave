@@ -23,7 +23,8 @@ typedef struct twaveSolution_t twaveSolution_t;
 
 struct twaveBoundaryProp_t
 {
-    double radiTransCoef;
+    double radiDissipateCoef;
+    double radiTransCoefs[2];
     double convectTransCoef;
     double contactResist;
     double ambientEffus;

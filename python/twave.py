@@ -9,7 +9,7 @@ libtwave=cdll.LoadLibrary('../lib/libtwave.so')
 class complex2lf_t(Structure):
     _fields_ = (("real",c_double),("imag",c_double))
 class twaveBoundaryProp_t(Structure):
-    _fields_ = (("radiTransCoef",c_double),("convectTransCoef",c_double),("contactResist",c_double),("ambientEffus",c_double),("temperatures",c_double*2),("leakageCoefs",c_double*2))
+    _fields_ = (("radiDissipateCoef",c_double),("radiTransCoefs",c_double*2),("convectTransCoef",c_double),("contactResist",c_double),("ambientEffus",c_double),("temperatures",c_double*2),("leakageCoefs",c_double*2))
 class twaveLayerProp_t(Structure):
     _fields_ = (("conductivity",c_double),("density",c_double),("specHeat",c_double),("thickness",c_double))
 
